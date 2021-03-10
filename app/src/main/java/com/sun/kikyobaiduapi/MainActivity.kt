@@ -1,7 +1,6 @@
 package com.sun.kikyobaiduapi
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
@@ -9,25 +8,25 @@ import android.graphics.*
 import android.net.Uri
 import android.os.Bundle
 import android.os.Looper
-import android.util.Base64
 import android.util.Log
 import android.view.View
+import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.sun.kikyobaiduapi.baidu.Base64Util
 import com.sun.kikyobaiduapi.logic.toJsonObj
 import com.zhihu.matisse.Matisse
 import com.zhihu.matisse.MimeType
 import com.zhihu.matisse.engine.impl.GlideEngine
 import com.zhihu.matisse.internal.entity.CaptureStrategy
-import kotlinx.android.synthetic.main.activity_main.*
 import okhttp3.*
 import java.io.ByteArrayOutputStream
 import java.io.IOException
-import java.nio.ByteBuffer
 import kotlin.concurrent.thread
 
 
@@ -35,11 +34,21 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         const val REQUEST_CODE_CHOOSE = 1
+        //ACCESS TOKEN
+        const val ACCESS_TOKEN = Config.ACCESS_TOKEN
     }
+
+    lateinit var imageView: ImageView
+    lateinit var processBar: ProgressBar
+    lateinit var fab: FloatingActionButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        processBar = findViewById(R.id.processBar)
+        imageView = findViewById(R.id.imageView)
+        fab = findViewById(R.id.fab)
 
         if (ContextCompat.checkSelfPermission(
                 this,
@@ -90,25 +99,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun draw() {
-        val drawable = resources.getDrawable(R.drawable.text)
-        val bitmap = BitmapFactory.decodeResource(resources, R.drawable.text)
-            .copy(Bitmap.Config.ARGB_8888, true)
-        Log.i("__canvas", "bitmap_ori ${bitmap.width}X${bitmap.height}")
-        val canvas = Canvas(bitmap)
-
-        Log.i("__canvas", "canvas ${canvas.width}X${canvas.height}")
-        val paint = Paint()
-
-        canvas.scale(canvas.width / 496f, canvas.height / 496f)
-        paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 5f
-        canvas.drawRect(Rect(280, 81, 280 + 70, 81 + 129), paint)
-
-        Log.i("__canvas", "canvas ${bitmap.width}X${bitmap.height}")
-        Glide.with(this).load(bitmap).into(imageView)
-    }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK)
@@ -126,8 +116,6 @@ class MainActivity : AppCompatActivity() {
                                     .copy(Bitmap.Config.ARGB_8888, true)
                             //Log.i("__canvas", "canvas ${bitmap.width}X${bitmap.height}")
 
-                            val access_token =
-                                "24.e31edfb33e8fc039133479b404f150a0.2592000.1594815059.282335-19367097"
 
                             val baos = ByteArrayOutputStream();
                             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
@@ -150,7 +138,7 @@ class MainActivity : AppCompatActivity() {
                             ).build()
                             val requestBody = FormBody.Builder().add("image", img).build()
                             val request = Request.Builder()
-                                .url("https://aip.baidubce.com/rest/2.0/ocr/v1/accurate?access_token=${access_token}")
+                                .url("https://aip.baidubce.com/rest/2.0/ocr/v1/accurate?access_token=${ACCESS_TOKEN}")
                                 .addHeader("content-type", "application/x-www-form-urlencoded")
                                 .post(requestBody)
                                 .build()
@@ -196,6 +184,4 @@ class MainActivity : AppCompatActivity() {
                 }
             }
     }
-
-
 }
